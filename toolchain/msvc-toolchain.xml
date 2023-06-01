@@ -54,6 +54,7 @@
 <compiler id="MSVC" exe="cl.exe" if="windows">
   <flag value="-nologo"/>
 
+  <cppflag value="/std:c++17" if="HXCPP_CPP17" />
 
   <!-- Newer options -->
   <!-- <flag value = "/analyze-" if="MSVC17+" /> -->
