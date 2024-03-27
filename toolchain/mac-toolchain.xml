@@ -6,6 +6,8 @@
 
 
 <include name="toolchain/gcc-toolchain.xml"/>
+<unset name="USE_PRECOMPILED_HEADERS" if="MAC_UNIVERSAL_BINARY"/>
+
 <setenv name="MACOSX_DEPLOYMENT_TARGET" value="10.12" if="HXCPP_CPP17" unless="MACOSX_DEPLOYMENT_TARGET" />
 <setenv name="MACOSX_DEPLOYMENT_TARGET" value="10.9" if="HXCPP_CPP11||HXCPP_CPP14" unless="MACOSX_DEPLOYMENT_TARGET"/>
 <setenv name="MACOSX_DEPLOYMENT_TARGET" value="10.7" if="OBJC_ARC" unless="MACOSX_DEPLOYMENT_TARGET" />
@@ -45,6 +47,16 @@
   <flag value="-DHX_MACOS"/>
   <flag value="-arch" />
   <flag value="${HXCPP_ARCH}"/>
+  <section if="MAC_UNIVERSAL_BINARY">
+    <section if="HXCPP_ARM64">
+      <flag value="-arch" />
+      <flag value="x86_64" />
+    </section>
+    <section unless="HXCPP_ARM64">
+      <flag value="-arch" />
+      <flag value="arm64" />
+    </section>
+  </section>
   <flag value="-DHXCPP_BIG_ENDIAN" if="HXCPP_BIG_ENDIAN"/>
   <flag value="-Wno-parentheses" />
   <flag value="-Wno-null-dereference" if="HXCPP_CLANG"/>
