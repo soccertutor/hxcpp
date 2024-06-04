@@ -83,6 +83,8 @@
   <flag value="${HXCPP_ARCH}"/>
   <flag value="-framework"/>
   <flag value="Cocoa"/>
+  <flag value="-framework"/>
+  <flag value="StoreKit"/>
   <flag value="-isysroot" unless="LEGACY_MACOSX_SDK"/>
   <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${MACOSX_VER}.sdk" unless="LEGACY_MACOSX_SDK"/>
   <flag value="-fvisibility=hidden"/>
