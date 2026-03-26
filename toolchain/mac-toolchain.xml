@@ -1,6 +1,5 @@
 <xml>
 <!-- MACOS TOOLS -->
-
 <set name="HXCPP_USE_LIBTOOL" value="1" />
 <set name="HXCPP_CPP11" value="1" unless="HXCPP_NO_CPP11 || HXCPP_CPP14 || HXCPP_CPP17" />
 
@@ -23,7 +22,7 @@
 
 
 <compiler id="darwin" exe="g++" if="macos">
-  <exe name="xcrun --sdk macosx${MACOSX_VER} clang++" if="HXCPP_CLANG" />
+  <exe name="xcrun --sdk macosx clang++" if="HXCPP_CLANG" />
   <flag value="-c"/>
   <flag value="-fvisibility=hidden"/>
   <cppflag value="-std=c++11" if="HXCPP_CPP11"/>
@@ -35,13 +34,13 @@
   <cppflag value="-stdlib=libstdc++" if="STDLIBCPP" />
   <mmflag value="-stdlib=libc++" unless="STDLIBCPP" />
   <mmflag value="-stdlib=libstdc++" if="STDLIBCPP" />
-  
+
   <cppflag value="-frtti"/>
   <pchflag value="-x" />
   <pchflag value="c++-header" />
   <flag value="-Qunused-arguments" if="LEGACY_MACOSX_SDK"/>
   <flag value="-isysroot" unless="LEGACY_MACOSX_SDK"/>
-  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${MACOSX_VER}.sdk" unless="LEGACY_MACOSX_SDK"/>
+  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" unless="LEGACY_MACOSX_SDK"/>
   <flag value="-g" if="debug"/>
   <flag value="-O2" unless="debug"/>
   <flag value="-I${HXCPP}/include"/>
@@ -69,11 +68,11 @@
   <flag value="-msse4.1" if="HXCPP_SSE4" unless="HXCPP_ARM" />
   <outflag value="-o"/>
   <ext value=".o"/>
-  <getversion value="xcrun --sdk macosx${MACOSX_VER} clang++ -v" if="HXCPP_CLANG" />
+  <getversion value="xcrun --sdk macosx clang++ -v" if="HXCPP_CLANG" />
 </compiler>
 
 <linker id="dll" exe="g++" if="macos">
-  <exe name="xcrun --sdk macosx${MACOSX_VER} clang++" if="HXCPP_CLANG" />
+  <exe name="xcrun --sdk macosx clang++" if="HXCPP_CLANG" />
   <fromfile value="" if="GCC_OLD" />
   <flag value="-Wl,-bundle,-bundle_loader,${dll_import_link}" if="dll_import_link" />
   <flag value="-Wl,-cache_path_lto,/tmp" if="HXCPP_LTO_THIN" unless="debug"/>
@@ -89,7 +88,7 @@
   <flag value="-framework"/>
   <flag value="Cocoa"/>
   <flag value="-isysroot" unless="LEGACY_MACOSX_SDK"/>
-  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${MACOSX_VER}.sdk" unless="LEGACY_MACOSX_SDK"/>
+  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" unless="LEGACY_MACOSX_SDK"/>
   <flag value="-fvisibility=hidden"/>
   <!-- <flag value="-debug" if="debug"/> -->
   <ext value=".dylib"/>
@@ -97,7 +96,7 @@
 </linker>
 
 <linker id="exe" exe="g++" if="macos">
-  <exe name="xcrun --sdk macosx${MACOSX_VER} clang++" if="HXCPP_CLANG" />
+  <exe name="xcrun --sdk macosx clang++" if="HXCPP_CLANG" />
   <!-- <flag value="-Wl,-stack_size,0x8000"/> -->
   <flag value="-rpath" />
   <flag value="@executable_path"/>
@@ -111,7 +110,7 @@
   <flag value="-framework"/>
   <flag value="Cocoa"/>
   <flag value="-isysroot" unless="LEGACY_MACOSX_SDK"/>
-  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX${MACOSX_VER}.sdk" unless="LEGACY_MACOSX_SDK"/>
+  <flag value="${DEVELOPER_DIR}/Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk" unless="LEGACY_MACOSX_SDK"/>
   <flag value="-fsanitize=thread" if="HXCPP_THREAD_SANITIZE" />
   <!-- <flag value="-debug" if="debug"/> -->
   <flag value="-arch" />
