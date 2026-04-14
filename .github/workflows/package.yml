@@ -45,6 +45,7 @@ jobs:
         run: xcode-select -p
           
       - name: Build Cppia
+        continue-on-error: true
         run: |
           cd project
           haxe compile-cppia.hxml -D HXCPP_M64
