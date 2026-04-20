@@ -397,6 +397,50 @@ Array<unsigned char> _hx_ssl_read( Dynamic hssl ) {
 	return result;
 }
 
+#ifdef NEKO_WINDOWS
+static int verify_callback(void* param, mbedtls_x509_crt *crt, int depth, uint32_t *flags) {
+	if (*flags == 0 || *flags & MBEDTLS_X509_BADCERT_CN_MISMATCH) {
+		return 0;
+	}
+
+	HCERTSTORE store = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, 0, CERT_STORE_DEFER_CLOSE_UNTIL_LAST_FREE_FLAG, NULL);
+	if(store == NULL) {
+		return MBEDTLS_ERR_X509_FATAL_ERROR;
+	}
+	PCCERT_CONTEXT primary_context = {0};
+	if(!CertAddEncodedCertificateToStore(store, X509_ASN_ENCODING, crt->raw.p, crt->raw.len, CERT_STORE_ADD_REPLACE_EXISTING, &primary_context)) {
+		CertCloseStore(store, 0);
+		return MBEDTLS_ERR_X509_FATAL_ERROR;
+	}
+	PCCERT_CHAIN_CONTEXT chain_context = {0};
+	CERT_CHAIN_PARA parameters = {0};
+	if(!CertGetCertificateChain(NULL, primary_context, NULL, store, &parameters, 0, NULL, &chain_context)) {
+		CertFreeCertificateContext(primary_context);
+		CertCloseStore(store, 0);
+		return MBEDTLS_ERR_X509_FATAL_ERROR;
+	}
+	CERT_CHAIN_POLICY_PARA policy_parameters = {0};
+	CERT_CHAIN_POLICY_STATUS policy_status = {0};
+	if(!CertVerifyCertificateChainPolicy(CERT_CHAIN_POLICY_SSL, chain_context, &policy_parameters, &policy_status)) {
+		CertFreeCertificateChain(chain_context);
+		CertFreeCertificateContext(primary_context);
+		CertCloseStore(store, 0);
+		return MBEDTLS_ERR_X509_FATAL_ERROR;
+	}
+	if(policy_status.dwError == 0) {
+		*flags = 0;
+	} else {
+		// if we ever want to read the verification result,
+		// we need to properly map dwError to flags
+		*flags |= MBEDTLS_X509_BADCERT_OTHER;
+	}
+	CertFreeCertificateChain(chain_context);
+	CertFreeCertificateContext(primary_context);
+	CertCloseStore(store, 0);
+	return 0;
+}
+#endif
+
 Dynamic _hx_ssl_conf_new( bool server ) {
 	int ret;
 	sslconf *conf = new sslconf();
@@ -407,6 +451,9 @@ Dynamic _hx_ssl_conf_new( bool server ) {
 		conf->destroy();
 		ssl_error( ret );
 	}
+#ifdef NEKO_WINDOWS
+	mbedtls_ssl_conf_verify(conf->c, verify_callback, NULL);
+#endif
 	mbedtls_ssl_conf_rng( conf->c, mbedtls_ctr_drbg_random, &ctr_drbg );
 	return conf;
 }
@@ -448,10 +495,16 @@ void _hx_ssl_conf_set_cert( Dynamic hconf, Dynamic hcert, Dynamic hpkey ) {
 
 static int sni_callback( void *arg, mbedtls_ssl_context *ctx, const unsigned char *name, size_t len ){
 	if( name && arg ){
+#if (HXCPP_API_LEVEL>=500)
+		auto cb  = hx::Callable<::Dynamic(::String)>(Dynamic(static_cast<hx::Object*>(arg)));
+		auto n   = reinterpret_cast<const char*>(name);
+		auto ret = cb(String(n, strlen(n)));
+#else
 		Dynamic cb = new Dynamic();
 		cb.mPtr = (hx::Object*)arg;
 		const char *n = (const char *)name;
 		Dynamic ret = cb->__run( String(n,strlen(n)) );
+#endif
 		if( ret != null() ){
 			// TODO authmode and ca
 			Dynamic hcert = ret->__Field(HX_CSTRING("cert"), hx::paccDynamic);
@@ -465,7 +518,11 @@ static int sni_callback( void *arg, mbedtls_ssl_context *ctx, const unsigned cha
 	return -1;
 }
 
+#if (HXCPP_API_LEVEL>=500)
+void _hx_ssl_conf_set_servername_callback(Dynamic hconf, ::hx::Callable<::Dynamic(String)> cb) {
+#else
 void _hx_ssl_conf_set_servername_callback( Dynamic hconf, Dynamic cb ){
+#endif
 	sslconf *conf = val_conf(hconf);
 	mbedtls_ssl_conf_sni( conf->c, sni_callback, (void *)cb.mPtr );
 }
