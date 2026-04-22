@@ -144,4 +144,5 @@ jobs:
             name: Release ${{ env.hxcpp_release }}
             draft: false
             prerelease: false
+            allowUpdates: true
             artifacts: ./hxcpp-${{ env.hxcpp_release }}.zip

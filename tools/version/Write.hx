@@ -18,6 +18,13 @@ class Write
             switch version.substr(1).split('.')
             {
                case [ previousMajor, previousMinor, previousPatch ]:
+                  // Branch build: tag has suffix like "141-iphonesim". Skip bump and file mutations.
+                  if (previousPatch.indexOf('-') != -1)
+                  {
+                     Sys.println('hxcpp_release=$previousMajor.$previousMinor.$previousPatch');
+                     return;
+                  }
+
                   final jsonFile = "haxelib.json";
                   final json     = (cast Json.parse(File.getContent(jsonFile)) : Haxelib);
 
